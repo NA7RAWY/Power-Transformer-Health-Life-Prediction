@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Transformer Health Prediction</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #e9f0f7;
+      padding: 40px;
+      text-align: center;
+    }
+    form {
+      background: #ffffff;
+      padding: 30px 40px;
+      border-radius: 10px;
+      display: inline-block;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    input {
+      padding: 10px;
+      margin: 10px;
+      width: 280px;
+      font-size: 16px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    #result {
+      margin-top: 30px;
+      font-size: 18px;
+    }
+    #result p {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>🔍 Transformer Health Prediction</h2>
+
+  <form id="predictionForm">
+    <input type="number" name="hydrogen" placeholder="Hydrogen (H₂)" step="any" required><br>
+    <input type="number" name="methane" placeholder="Methane (CH₄)" step="any" required><br>
+    <input type="number" name="acethylene" placeholder="Acethylene (C₂H₂)" step="any" required><br>
+    <input type="number" name="ethylene" placeholder="Ethylene (C₂H₄)" step="any" required><br>
+    <button type="submit">🔎 Predict</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById("predictionForm");
+    const resultDiv = document.getElementById("result");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = {
+        hydrogen: parseFloat(formData.get("hydrogen")),
+        methane: parseFloat(formData.get("methane")),
+        acethylene: parseFloat(formData.get("acethylene")),
+        ethylene: parseFloat(formData.get("ethylene"))
+      };
+
+      try {
+        const response = await fetch("http://localhost:5000/api/predict", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          resultDiv.innerHTML = `<p style="color:red;">❌ Error: ${result.error}</p>`;
+        } else {
+          resultDiv.innerHTML = `
+            <p>✅ <strong>Status:</strong> ${result.status}</p>
+            <p>⏳ <strong>Estimated Remaining Life:</strong> ${result.life} years</p>
+            <p>💡 <strong>Recommendation:</strong> ${result.recommendation}</p>
+          `;
+        }
+
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red;">🔌 Connection failed: ${err.message}</p>`;
+      }
+    });
+  </script>
+
+</body>
+</html>
